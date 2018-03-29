@@ -1,4 +1,3 @@
-
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
  
 //local:2
@@ -19,9 +18,6 @@ __kernel void expectation(__global const double* data, __global double* covx,
 	
 	Dj = dim*dim;
 
-	//barrier (CLK_GLOBAL_MEM_FENCE);
-
-	
 	for(i = 0; i < K; i++){
 
 		mu_temp[0] = mu[i*2];
@@ -29,19 +25,26 @@ __kernel void expectation(__global const double* data, __global double* covx,
 
 		meanDiff[iGiD] = data[iGiD] - mu_temp[iGiD%2];
 
+
+        det = covx[0+ Dj*i]*covx[3+ Dj*i] - covx[1+ Dj*i]*covx[2+ Dj*i];
+        covx_inv[0] = covx[3+ Dj*i]/det;
+        covx_inv[1] = 0 - covx[1+ Dj*i]/det;
+        covx_inv[2] = 0 - covx[2+ Dj*i]/det;
+        covx_inv[3] = covx[0+ Dj*i]/det;
+
 		if(iGiD % 2 == 0){
-			pdf[(iGiD/2)*K + i] = (1/sqrt( pow(2*M_PI,dim) * det)) * exp( -0.5* ((meanDiff[iGiD]*covx_inv[0]+meanDiff[iGiD+1]*covx_inv[2])*meanDiff[iGiD] + (meanDiff[iGiD]*covx_inv[1]+meanDiff[iGiD+1]*covx_inv[3])*meanDiff[iGiD+1]));
-			//barrier (CLK_GLOBAL_MEM_FENCE);	
+			pdf[(iGiD/2)*K + i] = (1/sqrt( pow(2*M_PI,dim) * det)) * 
+                                exp( -0.5* ((meanDiff[iGiD]*covx_inv[0]+meanDiff[iGiD+1]*covx_inv[2])*meanDiff[iGiD] +
+                                (meanDiff[iGiD]*covx_inv[1]+meanDiff[iGiD+1]*covx_inv[3])*meanDiff[iGiD+1]));	
 			pdf_w[(iGiD/2)*K + i] = pdf[(iGiD/2)*K + i] * phi[i];
 		}
 	}
 
-	
 	for(i=0; i < K; i++){
 		if (iGiD % 2 == 0) 
-			W[(iGiD/2)*K + i] = pdf_w[(iGiD/2)*K + i] / (pdf_w[(iGiD/2)*K + 0]+ pdf_w[(iGiD/2)*K + 1] + pdf_w[(iGiD/2)*K + 2] + pdf_w[(iGiD/2)*K+3]);
+			W[(iGiD/2)*K + i] = pdf_w[(iGiD/2)*K + i] / (pdf_w[(iGiD/2)*K + 0]+ pdf_w[(iGiD/2)*K + 1] + 
+                                pdf_w[(iGiD/2)*K + 2] + pdf_w[(iGiD/2)*K+3]);
 	}
-
 }
 
 //====================================================================================
@@ -54,6 +57,8 @@ __kernel void transpose(__global double* W, __global double* WT,
 	int iGID = get_global_id(0);
 	int iLID = get_local_id(0);
 	int GroupID = get_group_id(0);
+
+
 	WT[iLID*M + GroupID] = W[iGID];
 
 }
@@ -73,7 +78,6 @@ __kernel void sum_offset(__global double* X, __global double* scratch, __global 
 	}else{
 		scratch[iGID] = 0.0f;
 	}
-
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	
 	if(iGID == 0){
@@ -84,7 +88,9 @@ __kernel void sum_offset(__global double* X, __global double* scratch, __global 
 		temp1[index] = scratch[0];
 		temp2[index] = scratch[0]/N;
 	}
+
 }
+
 //K*M  M*N
 __kernel void matrix_multi(__global double* X, __global double* Y,  
 			__global double* center_temp,int M, int K, int N)
@@ -98,6 +104,7 @@ __kernel void matrix_multi(__global double* X, __global double* Y,
 		tmp = tmp + X[i*M+k] * Y[k*N+j];
 	}
 	center_temp[i*N+j] = tmp;
+
 }
 
 //local: N
@@ -162,6 +169,7 @@ __kernel void sigma_k_compute(__global double* XM,
 			break;
 		
 	}
+
 	barrier (CLK_GLOBAL_MEM_FENCE);
 	if(GroupID == 0){
 		Sigma_k[iGID] = 0.0f;

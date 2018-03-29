@@ -1,13 +1,3 @@
-/*
- * Copyright 1993-2010 NVIDIA Corporation.  All rights reserved.
- *
- * Please refer to the NVIDIA end user license agreement (EULA) associated
- * with this source code for terms and conditions that govern your use of
- * this software. Any use, reproduction, disclosure, or distribution of
- * this software and related documentation outside the terms of the EULA
- * is strictly prohibited.
- *
- */
  //data[i*dim]~data[i*(dim+1)-1] --> one node data
  //so is center
  //local size = K
@@ -25,34 +15,26 @@ __kernel void find_cluster_center(__global float* data, __global float* center,
 	int GroupID = get_group_id(0);
 	int i = 0;
 	float temp_s;
-   // __local float scratch[s_l];
-	//__local int index[s_l];
+
 	// distance computation and bound check (equivalent to the limit on a 'for' loop for standard/serial C code)
 	barrier (CLK_GLOBAL_MEM_FENCE);
     if (iGID >= N*K)
     {   
         scratch[iGID] = MAXFLOAT;
     }else {
-		//temp_s = 0;
+
 		scratch[iGID] = 0.0;
 		for (i = 0; i<dim; i = i+1){
-			//scratch[iLID+s_l*GroupID] = scratch[iLID+s_l*GroupID] + (data[GroupID*dim+i]-center[iLID*dim+i])*(data[GroupID*dim+i]-center[iLID*dim+i]);
-			//temp_s =data[GroupID*dim+i]; //(data[GroupID*dim+i]-center[iLID*dim+i])*(data[GroupID*dim+i]-center[iLID*dim+i]);
 			scratch[iGID] = scratch[iGID] + (data[GroupID*dim+i]-center[iLID*dim+i])*(data[GroupID*dim+i]-center[iLID*dim+i]);
 		}
-		//temp[iGID] = scratch[iLID];
-		//scratch[iLID] = temp_s;
 		temp[iGID] = scratch[iGID];
 	}
 	index[iGID] = iLID;
 	
-    //barrier (CLK_LOCAL_MEM_FENCE);
 	barrier (CLK_GLOBAL_MEM_FENCE);
 	
 	for ( offset = offset/2; offset>0; offset >>= 1 ){
 		if (iLID < offset){
-			//scratch[iLID+s_l*GroupID] = (scratch[iLID+s_l*GroupID] < scratch[iLID+offset+s_l*GroupID]) ? scratch[iLID+s_l*GroupID] : scratch[iLID+s_l*GroupID+offset];
-			//index[iLID+s_l*GroupID] = (scratch[iLID+s_l*GroupID] < scratch[iLID+s_l*GroupID+offset]) ? index[iLID+s_l*GroupID] : index[iLID+s_l*GroupID+offset];
 			scratch[iGID] = (scratch[iGID] < scratch[iGID+offset]) ? scratch[iGID] : scratch[iGID+offset];
 			index[iGID] = (scratch[iGID] < scratch[iGID+offset]) ? index[iGID] : index[iGID+offset];
 		}
@@ -60,9 +42,7 @@ __kernel void find_cluster_center(__global float* data, __global float* center,
 	}
 	barrier (CLK_GLOBAL_MEM_FENCE);
 	if (iLID == 0 && GroupID < N){
-		//C[GroupID] = index[0];
 		C[GroupID] = index[iGID];
-		//C[GroupID] = GroupID;
 	}
 	barrier (CLK_GLOBAL_MEM_FENCE);
 	if (iGID < K*N){
@@ -96,14 +76,6 @@ __kernel void compare_center(__global int* C, __global int* temp, __global int* 
 }
 
 
-
-
-
-
-
-
-
-
 //N: number of nodes
 //K: number of cluster = local size
 //Global Size: >=K*N power of 2
@@ -112,14 +84,11 @@ __kernel void cd_transpose(__global int* Cd, __global int* CdT,
 {
 	int iGID = get_global_id(0);
 	int iLID = get_local_id(0);
-	//int offset = get_local_size(0);
+
 	int GroupID = get_group_id(0);
-	//int GroupSize = get_num_groups(0);
-	//CdT[iGID] = 0;
+
 	barrier (CLK_GLOBAL_MEM_FENCE);
-	//if (GroupID < N){
-		CdT[iLID*N + GroupID] = Cd[iGID];
-	//}
+	CdT[iLID*N + GroupID] = Cd[iGID];
 	barrier (CLK_GLOBAL_MEM_FENCE);
 }
 
@@ -143,8 +112,6 @@ __kernel void update_center(__global float* data, __global float* center,
 		barrier (CLK_GLOBAL_MEM_FENCE);
 	}
 	tmp = tmp / pts;
-	//points[i] = pts;
-	//center_temp[i*dim+j] = center_temp[i*dim+j] + tmp;
 	center_temp[i*dim+j] = tmp;
 	barrier (CLK_GLOBAL_MEM_FENCE);
 	if((i == 0) && (j==0)){

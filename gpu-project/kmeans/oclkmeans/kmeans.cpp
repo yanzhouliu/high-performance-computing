@@ -142,13 +142,8 @@ int main(int argc, char **argv)
 		printf("malloc failed\n");
 		exit(-1);
 	}
-    //fp = fopen("data_500.txt","r");
-    //fp = fopen("color100.txt","r");
-    //fp = fopen("data_1.two","r");
-    //fp = fopen("kmeansdata","r");
+
     fp = fopen("kmeans_1.4k.2d.4000","r");
-    //fp = fopen("kmeans_2.4k.2d.4w","r");
-    //fp = fopen("kmeans_3.4k.16d.4w","r");
 	if(fp==NULL){
 		printf("kmeans failed\n");
 	}
@@ -160,13 +155,9 @@ int main(int argc, char **argv)
 	}
 	
 	fclose(fp);
-	//fp = fopen("center4.txt","r");
-	//fp = fopen("center.txt","r");
-	//fp = fopen("data_1.4.center","r");
-	//fp = fopen("kmeans_2.center","r");
-	//fp = fopen("kmeans_3.center","r");
+
 	fp = fopen("kmeans_1.center","r");
-	//fp = fopen("center4data","r");
+
 	if(fp==NULL){
 		printf("cen failed\n");
 	}
@@ -224,19 +215,13 @@ int main(int argc, char **argv)
     ciErr1 |= ciErr2;
     cmDevCd = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_int) * szGlobalWorkSize_K1, NULL, &ciErr2);
     ciErr1 |= ciErr2;
-    // cmDevScratch = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_float) * szLocalWorkSize_K1, NULL, &ciErr2);
-    // ciErr1 |= ciErr2;
-    // cmDevIndex = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_int) * szLocalWorkSize_K1, NULL, &ciErr2);
-    // ciErr1 |= ciErr2;
 	cmDevScratch = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_float) * szGlobalWorkSize_K1, NULL, &ciErr2);
     ciErr1 |= ciErr2;
     cmDevIndex = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_int) * szGlobalWorkSize_K1, NULL, &ciErr2);
     ciErr1 |= ciErr2;
     cmDevPrev_C = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_int) * szGlobalWorkSize_K1, NULL, &ciErr2);
-    //cmDevPrev_C = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_int) * N, NULL, &ciErr2);
     ciErr1 |= ciErr2;
 	cl_mem temp = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_int) * szGlobalWorkSize_K1, NULL, &ciErr2);
-	//cl_mem temp = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_int) * N, NULL, &ciErr2);
     ciErr1 |= ciErr2;
 	
 	//Kernel2: Transpose
@@ -259,7 +244,6 @@ int main(int argc, char **argv)
     }
     
     // Read the OpenCL kernel in from source file
-    //REVISE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	cPathAndName = "../../../src/oclkmeans/classify_cluster.cl";
     cSourceCL = oclLoadProgSource(cPathAndName, "", &szKernelLength);
 
@@ -337,9 +321,7 @@ int main(int argc, char **argv)
     ciErr1 |= clSetKernelArg(ckKernel_find, 2, sizeof(cl_mem), (void*)&cmDevC);
     ciErr1 |= clSetKernelArg(ckKernel_find, 3, sizeof(cl_mem), (void*)&cmDevCd);
     ciErr1 |= clSetKernelArg(ckKernel_find, 4, sizeof(cl_mem), (void*)&cmDevScratch);
-    //ciErr1 |= clSetKernelArg(ckKernel_find, 4, szLocalWorkSize_K1 * szGroupSize_K1 * sizeof(cl_float), NULL);
     ciErr1 |= clSetKernelArg(ckKernel_find, 5, sizeof(cl_mem), (void*)&cmDevIndex);
-    //ciErr1 |= clSetKernelArg(ckKernel_find, 5, szLocalWorkSize_K1 * szGroupSize_K1 * sizeof(cl_int), NULL);
     ciErr1 |= clSetKernelArg(ckKernel_find, 6, sizeof(cl_int), (void*)&N);
     ciErr1 |= clSetKernelArg(ckKernel_find, 7, sizeof(cl_int), (void*)&K);
     ciErr1 |= clSetKernelArg(ckKernel_find, 8, sizeof(cl_int), (void*)&dim);
@@ -373,7 +355,6 @@ int main(int argc, char **argv)
     ciErr1 |= clSetKernelArg(ckKernel_update, 4, sizeof(cl_int), (void*)&K);
     ciErr1 |= clSetKernelArg(ckKernel_update, 5, sizeof(cl_int), (void*)&dim);
 	ciErr1 |= clSetKernelArg(ckKernel_update, 6, sizeof(cl_mem), (void*)&cmCenter_temp);
-	//ciErr1 |= clSetKernelArg(ckKernel_update, 7, sizeof(cl_mem), (void*)&cmDevDiff);
 	ciErr1 |= clSetKernelArg(ckKernel_update, 7, sizeof(cl_mem), (void*)&cmDevConv);
 	
     printf("clSetKernelArg 0 - 7...\n\n"); 
@@ -443,7 +424,6 @@ int main(int argc, char **argv)
 		
 		ciErr1 = clEnqueueReadBuffer(cqCommandQueue, temp, CL_TRUE, 0, sizeof(cl_int) * 1, &C_diff, 0, NULL, NULL);
 		clFinish (cqCommandQueue);
-		//printf("C_diff:%f\n",C_diff);
 		
 		ciErr1 = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel_tr, 1, NULL, &szGlobalWorkSize_K2, &szLocalWorkSize_K2, 0, NULL, &event2);
 		printf("clEnqueueNDRangeKernel (Transpose)...\n"); 
@@ -462,18 +442,12 @@ int main(int argc, char **argv)
 			Cleanup(argc, argv, EXIT_FAILURE);
 		}
 		clFinish (cqCommandQueue);
-		//ciErr1 |= clEnqueueWriteBuffer(cqCommandQueue, cmCenter_temp, CL_FALSE, 0, sizeof(cl_float) * szLocalWorkSize_K1*dim, zero_pad, 0, NULL, NULL);
-		//clFinish (cqCommandQueue);
-		//ciErr1 = clEnqueueReadBuffer(cqCommandQueue, cmDevConv, CL_TRUE, 0, sizeof(cl_int) * 1, &Conv, 0, NULL, NULL);
-		//clFinish (cqCommandQueue);
 		ciErr1 = clEnqueueReadBuffer(cqCommandQueue, cmCenter_temp, CL_TRUE, 0, sizeof(cl_float) * 1, &diff, 0, NULL, NULL);
 		clFinish (cqCommandQueue);
 		
 		iter++;
 		printf("iter:%d\t  diff:%f\t C_diff:%d\n",iter,diff, C_diff);
-	//}while ((iter < 100 && diff > 0) || iter <2);
 	}while (diff > 0 && iter < 100);
-	//}while (diff>0.199435 && iter < 100);
 	end = clock();
 	time_spent = (double)(end - begin)/ CLOCKS_PER_SEC*1000000;
 	
@@ -504,7 +478,6 @@ int main(int argc, char **argv)
 	ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, temp, CL_TRUE, 0, sizeof(cl_int) * szGlobalWorkSize_K1, temp_k, 0, NULL, NULL);
     ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevCd, CL_TRUE, 0, sizeof(cl_int) * szGlobalWorkSize_K1, Cd, 0, NULL, NULL);
     ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevCdT, CL_TRUE, 0, sizeof(cl_int) * szGlobalWorkSize_K2, CdT, 0, NULL, NULL);
-    //ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmCenter_temp, CL_TRUE, 0, sizeof(cl_float) * K*dim, center_temp, 0, NULL, NULL);
     ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevCenter, CL_TRUE, 0, sizeof(cl_float) * K*dim, center_temp, 0, NULL, NULL);
     
 	clFinish (cqCommandQueue);
@@ -517,7 +490,6 @@ int main(int argc, char **argv)
     }
     //--------------------------------------------------------
 
-    // Compute and compare results for golden-host and report errors and pass/fail
     fp = fopen("C.txt","w");
 	for(i = 0; i<N; i++){
 		fprintf(fp, "%d\n",(((int *)C)[i]));
@@ -561,8 +533,7 @@ int main(int argc, char **argv)
 
 void Cleanup (int argc, char **argv, int iExitCode)
 {
-    //if(cPathAndName)free(cPathAndName);
-    //if(cSourceCL)free(cSourceCL);
+
 	if(ckKernel_find)clReleaseKernel(ckKernel_find);  
 	if(ckKernel_tr)clReleaseKernel(ckKernel_tr);  
 	if(ckKernel_update)clReleaseKernel(ckKernel_update);  

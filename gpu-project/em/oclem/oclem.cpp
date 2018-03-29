@@ -674,8 +674,7 @@ int main(int argc, char **argv)
         Cleanup(argc, argv, EXIT_FAILURE);
     }
     //--------------------------------------------------------
-	printf("printing\n");
-    // Compute and compare results for golden-host and report errors and pass/fail
+
 	fp = fopen("W_g.txt","w");
 	for(i=0; i<K*M; i++){
 		
