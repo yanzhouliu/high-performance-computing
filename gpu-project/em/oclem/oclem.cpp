@@ -24,15 +24,15 @@ cl_command_queue cqCommandQueue;// OpenCL command que
 cl_platform_id cpPlatform;      // OpenCL platform
 cl_device_id cdDevice;          // OpenCL device
 cl_program cpProgram;           // OpenCL program
-cl_kernel ckKernel_E;             // OpenCL kernel
-cl_kernel ckKernel_T;             // OpenCL kernel
-cl_kernel ckKernel_WTS;             // OpenCL kernel  WT_sum
-cl_kernel ckKernel_Multi;             // OpenCL kernel  WT_sum
-cl_kernel ckKernel_Mu;             // OpenCL kernel  WT_sum
-cl_kernel ckKernel_Xmj;             // OpenCL kernel  WT_sum
-cl_kernel ckKernel_Sigma;             // OpenCL kernel  WT_sum
-cl_kernel ckKernel_CovUpdate;             // OpenCL kernel  WT_sum
-//cl_kernel ckKernel_TRSigma;             // OpenCL kernel  WT_sum
+cl_kernel ckKernel_E;             
+cl_kernel ckKernel_T;             
+cl_kernel ckKernel_WTS;             
+cl_kernel ckKernel_Multi;             
+cl_kernel ckKernel_Mu;             
+cl_kernel ckKernel_Xmj;             
+cl_kernel ckKernel_Sigma;             
+cl_kernel ckKernel_CovUpdate;            
+
 
 cl_event event;
 
@@ -47,7 +47,6 @@ cl_mem cmDevMu;
 cl_mem cmDevPrevMu;
 cl_mem cmDevDiff;
 cl_mem cmDevXm;
-//cl_mem cmDevTRXm;
 cl_mem cmDevSigmaK;
 cl_mem cmDevScratchSigma;
 cl_mem cmDevCovx;
@@ -56,15 +55,7 @@ cl_mem cmDevCovx_inv;
 cl_mem cmDevMeanDiff;
 cl_mem cmDevPdf;
 cl_mem cmDevPdf_w;
-//cl_mem cmDevData;
-//cl_mem cmCovx;
-// cl_mem cmCovx_inv;
-// cl_mem cmMeanDiff;
-// cl_mem cmPdf;
-// cl_mem cmMu;
-// cl_mem cmPhi;
-// cl_mem cmPdf_w;
-// cl_mem cmW;
+
 
 //event
 cl_event event0;
@@ -101,8 +92,7 @@ size_t szLocalWorkSize6;
 //Cov_update
 size_t szGlobalWorkSize7;        // 1D var for Total # of work items
 size_t szLocalWorkSize7;
-//size_t szGlobalWorkSize7[matrix_dim];        // 1D var for Total # of work items
-//size_t szLocalWorkSize7[matrix_dim];
+
 
 
 size_t szGroupSize;
@@ -192,24 +182,19 @@ int main(int argc, char **argv)
 		printf("malloc failed\n");
 		exit(-1);
 	}
-    //fp = fopen("data.txt","r");
-    //fp = fopen("em_1.2k.10000","r");
+
     fp = fopen("em_3.4k.4000","r");
 	for(i = 0; i<N*M; i++){
 		fscanf(fp, "%lf",&(((double *)X)[i]));
 	}
 	fclose(fp);
 	
-	//fp = fopen("mu.txt","r");
-	//fp = fopen("em_1.mu","r");
 	fp = fopen("em_3.mu","r");
 	for(i = 0; i<K*N; i++){
 		fscanf(fp, "%lf",&(((double *)mu)[i]));
 	}
 	fclose(fp);
 	
-	//fp = fopen("covx.txt","r");
-	//fp = fopen("em_1.covx","r");
 	fp = fopen("em_3.covx","r");
 	for(i = 0; i<K*N*N; i++){
 		fscanf(fp, "%lf",&(((double *)covx)[i]));
@@ -276,8 +261,6 @@ int main(int argc, char **argv)
 	ciErr1 |= ciErr2;
 	cmDevXm = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_double) * M *N, NULL, &ciErr2);
 	ciErr1 |= ciErr2;
-	//cmDevTRXm = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_double) * M *N, NULL, &ciErr2);
-	//ciErr1 |= ciErr2;
 	cmDevSigmaK = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_double) * N *N, NULL, &ciErr2);
 	ciErr1 |= ciErr2;
 	cmDevScratchSigma = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, sizeof(cl_double) * M * N *N, NULL, &ciErr2);
@@ -439,7 +422,6 @@ int main(int argc, char **argv)
 	ciErr1 |= clSetKernelArg(ckKernel_WTS, 3, sizeof(cl_mem), (void*)&cmDevPHI);
 	ciErr1 |= clSetKernelArg(ckKernel_WTS, 4, sizeof(cl_int), (void*)&M);
 	ciErr1 |= clSetKernelArg(ckKernel_WTS, 5, sizeof(cl_int), (void*)&M_ext);
-	//ciErr1 |= clSetKernelArg(ckKernel_WTS, 5, sizeof(cl_int), (void*)&num);
     printf("clSetKernelArg 0 - 5...\n\n");
     if (ciErr1 != CL_SUCCESS)
     {
@@ -492,7 +474,6 @@ int main(int argc, char **argv)
 	ciErr1 |= clSetKernelArg(ckKernel_Sigma, 2, sizeof(cl_mem), (void*)&cmDevSigmaK);
 	ciErr1 |= clSetKernelArg(ckKernel_Sigma, 3, sizeof(cl_mem), (void*)&cmDevScratchSigma);
 	ciErr1 |= clSetKernelArg(ckKernel_Sigma, 4, sizeof(cl_mem), (void*)&cmDevWT_sum);
-	//ciErr1 |= clSetKernelArg(ckKernel_Sigma, 5, sizeof(cl_int), (void*)&wj);
 	ciErr1 |= clSetKernelArg(ckKernel_Sigma, 6, sizeof(cl_int), (void*)&N);
 	ciErr1 |= clSetKernelArg(ckKernel_Sigma, 7, sizeof(cl_int), (void*)&K);
     printf("clSetKernelArg 0 - 7...\n\n");
@@ -504,7 +485,6 @@ int main(int argc, char **argv)
 	
 	ciErr1 = clSetKernelArg(ckKernel_CovUpdate, 0, sizeof(cl_mem), (void*)&cmDevSigmaK);
 	ciErr1 |= clSetKernelArg(ckKernel_CovUpdate, 1, sizeof(cl_mem), (void*)&cmDevCovx);
-	//ciErr1 |= clSetKernelArg(ckKernel_CovUpdate, 2, sizeof(cl_int), (void*)&wj);
 	ciErr1 |= clSetKernelArg(ckKernel_CovUpdate, 3, sizeof(cl_int), (void*)&N);
     printf("clSetKernelArg 0 - 3...\n\n");
     if (ciErr1 != CL_SUCCESS)
@@ -532,8 +512,6 @@ int main(int argc, char **argv)
 
     // Launch kernel
 	// set and log Global and Local work size dimensions
-
-	
 	printf("...\n");
 	int iter = 0;
 	total_time = 0.0;
@@ -541,8 +519,6 @@ int main(int argc, char **argv)
 		
 		ciErr1 = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel_E, 1, NULL, &szGlobalWorkSize0, &szLocalWorkSize0, 0, NULL, &event0);
 		printf("clEnqueueNDRangeKernel (Expectation)...\n");
-		//clFinish(cqCommandQueue);
-		//clWaitForEvents(1, &event);
 		if (ciErr1 != CL_SUCCESS)
 		{
 			printf("Error %d in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n",ciErr1, __LINE__, __FILE__);
@@ -557,8 +533,6 @@ int main(int argc, char **argv)
 		
 		ciErr1 = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel_T, 1, NULL, &szGlobalWorkSize1, &szLocalWorkSize1, 0, NULL, &event1);
 		printf("clEnqueueNDRangeKernel (Tanspose)...\n");
-		//clFinish(cqCommandQueue);
-		//clWaitForEvents(1, &event);
 		if (ciErr1 != CL_SUCCESS)
 		{
 			printf("Error %d in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n",ciErr1, __LINE__, __FILE__);
@@ -590,8 +564,6 @@ int main(int argc, char **argv)
 		
 		ciErr1 = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel_Multi, 2, NULL, szGlobalWorkSize3, NULL, 0, NULL, &event3);
 		printf("clEnqueueNDRangeKernel (multi)...\n");
-		//clFinish(cqCommandQueue);
-		//clWaitForEvents(1, &event);
 		if (ciErr1 != CL_SUCCESS)
 		{
 			printf("Error %d in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n",ciErr1, __LINE__, __FILE__);
@@ -607,8 +579,6 @@ int main(int argc, char **argv)
 		printf("clEnqueueNDRangeKernel (beforemu)...\n");
 		ciErr1 = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel_Mu, 1, NULL, &szGlobalWorkSize4, &szLocalWorkSize4, 0, NULL, &event4);
 		printf("clEnqueueNDRangeKernel (mu)...\n");
-		//clFinish(cqCommandQueue);
-		//clWaitForEvents(1, &event);
 		if (ciErr1 != CL_SUCCESS)
 		{
 			printf("Error %d in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n",ciErr1, __LINE__, __FILE__);
@@ -626,8 +596,6 @@ int main(int argc, char **argv)
 			ciErr1 |= clSetKernelArg(ckKernel_Xmj, 3, sizeof(cl_int), (void*)&j);
 			ciErr1 = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel_Xmj, 1, NULL, &szGlobalWorkSize5, &szLocalWorkSize5, 0, NULL, &event5);
 			printf("clEnqueueNDRangeKernel (Xm)...\n");
-			//clFinish(cqCommandQueue);
-			//clWaitForEvents(1, &event);
 			if (ciErr1 != CL_SUCCESS)
 			{
 				printf("Error %d in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n",ciErr1, __LINE__, __FILE__);
@@ -645,8 +613,6 @@ int main(int argc, char **argv)
 			ciErr1 |= clSetKernelArg(ckKernel_Sigma, 5, sizeof(cl_int), (void*)&wj);
 			ciErr1 = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel_Sigma, 1, NULL, &szGlobalWorkSize6, &szLocalWorkSize6, 0, NULL, &event6);
 			printf("clEnqueueNDRangeKernel (Sigma)...\n");
-			//clFinish(cqCommandQueue);
-			//clWaitForEvents(1, &event);
 			if (ciErr1 != CL_SUCCESS)
 			{
 				printf("Error %d in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n",ciErr1, __LINE__, __FILE__);
@@ -657,15 +623,13 @@ int main(int argc, char **argv)
 			clGetEventProfilingInfo(event6, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
 			clGetEventProfilingInfo(event6, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
 			total_time += time_end - time_start;
-		printf("%f\n",((time_end - time_start) / 1000000.0));
+            printf("%f\n",((time_end - time_start) / 1000000.0));
 		
 			wj = num;
 			
 			ciErr1 |= clSetKernelArg(ckKernel_CovUpdate, 2, sizeof(cl_int), (void*)&wj);
 			ciErr1 = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel_CovUpdate, 1, NULL, &szGlobalWorkSize7, &szLocalWorkSize7, 0, NULL, &event7);
 			printf("clEnqueueNDRangeKernel (CovUpdate)...\n");
-			//clFinish(cqCommandQueue);
-			//clWaitForEvents(1, &event);
 			if (ciErr1 != CL_SUCCESS)
 			{
 				printf("Error %d in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n",ciErr1, __LINE__, __FILE__);
@@ -676,7 +640,7 @@ int main(int argc, char **argv)
 			clGetEventProfilingInfo(event7, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
 			clGetEventProfilingInfo(event7, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
 			total_time += time_end - time_start;
-		printf("%f\n",((time_end - time_start) / 1000000.0));
+            printf("%f\n",((time_end - time_start) / 1000000.0));
 		
 		}
 		ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevDiff, CL_TRUE, 0, sizeof(cl_double) * 1, diff, 0, NULL, NULL);
@@ -701,11 +665,8 @@ int main(int argc, char **argv)
 	ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevMulti, CL_TRUE, 0, sizeof(cl_double) * K*N, multi, 0, NULL, NULL);
 	ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevMu, CL_TRUE, 0, sizeof(cl_double) * K*N, mu, 0, NULL, NULL);
 	ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevXm, CL_TRUE, 0, sizeof(cl_double) * M*N, xm, 0, NULL, NULL);
-	//ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevTRXm, CL_TRUE, 0, sizeof(cl_double) * M*N, xm, 0, NULL, NULL);
-	//ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevScratchSigma, CL_TRUE, 0, sizeof(cl_double) * M*N*N, sigmaS, 0, NULL, NULL);
 	ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevSigmaK, CL_TRUE, 0, sizeof(cl_double) * N*N, sigmaS, 0, NULL, NULL);
 	ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevCovx, CL_TRUE, 0, sizeof(cl_double) * K*N*N, covx, 0, NULL, NULL);
-	//ciErr1 |= clEnqueueReadBuffer(cqCommandQueue, cmDevDiff, CL_TRUE, 0, sizeof(cl_double) * 1, diff, 0, NULL, NULL);
 	printf("clEnqueueReadBuffer (WT)...\n\n");
     if (ciErr1 != CL_SUCCESS)
     {

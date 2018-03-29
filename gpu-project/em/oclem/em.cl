@@ -1,18 +1,9 @@
-/*
- * Copyright 1993-2010 NVIDIA Corporation.  All rights reserved.
- *
- * Please refer to the NVIDIA end user license agreement (EULA) associated
- * with this source code for terms and conditions that govern your use of
- * this software. Any use, reproduction, disclosure, or distribution of
- * this software and related documentation outside the terms of the EULA
- * is strictly prohibited.
- *
- */
-   #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
  
 //local:2
 //global:M*N
-__kernel void expectation(__global const double* data, __global double* covx,// __global double* covx_inv,
+__kernel void expectation(__global const double* data, __global double* covx,
 							__global double* meanDiff, __global double* pdf, __global double* mu, __global double *phi,
 							__global double *pdf_w, __global double *W, int N, int dim, int K )
 {
@@ -32,22 +23,12 @@ __kernel void expectation(__global const double* data, __global double* covx,// 
 
 	
 	for(i = 0; i < K; i++){
-		//if(iGiD == 0){
+
 		mu_temp[0] = mu[i*2];
 		mu_temp[1] = mu[i*2+1];
-		//meanDiff[iGiD] = 0.0f;
-		//}
-		meanDiff[iGiD] = data[iGiD] - mu_temp[iGiD%2];
-		//barrier (CLK_GLOBAL_MEM_FENCE);
 
-		//if(iGiD == 0){
-			det = covx[0+ Dj*i]*covx[3+ Dj*i] - covx[1+ Dj*i]*covx[2+ Dj*i];
-			covx_inv[0] = covx[3+ Dj*i]/det;
-			covx_inv[1] = 0 - covx[1+ Dj*i]/det;
-			covx_inv[2] = 0 - covx[2+ Dj*i]/det;
-			covx_inv[3] = covx[0+ Dj*i]/det;
-		//}
-		//barrier (CLK_GLOBAL_MEM_FENCE);
+		meanDiff[iGiD] = data[iGiD] - mu_temp[iGiD%2];
+
 		if(iGiD % 2 == 0){
 			pdf[(iGiD/2)*K + i] = (1/sqrt( pow(2*M_PI,dim) * det)) * exp( -0.5* ((meanDiff[iGiD]*covx_inv[0]+meanDiff[iGiD+1]*covx_inv[2])*meanDiff[iGiD] + (meanDiff[iGiD]*covx_inv[1]+meanDiff[iGiD+1]*covx_inv[3])*meanDiff[iGiD+1]));
 			//barrier (CLK_GLOBAL_MEM_FENCE);	
@@ -55,13 +36,11 @@ __kernel void expectation(__global const double* data, __global double* covx,// 
 		}
 	}
 
-	//barrier (CLK_GLOBAL_MEM_FENCE);
 	
 	for(i=0; i < K; i++){
 		if (iGiD % 2 == 0) 
 			W[(iGiD/2)*K + i] = pdf_w[(iGiD/2)*K + i] / (pdf_w[(iGiD/2)*K + 0]+ pdf_w[(iGiD/2)*K + 1] + pdf_w[(iGiD/2)*K + 2] + pdf_w[(iGiD/2)*K+3]);
 	}
-	//barrier (CLK_GLOBAL_MEM_FENCE);
 
 }
 
@@ -75,12 +54,8 @@ __kernel void transpose(__global double* W, __global double* WT,
 	int iGID = get_global_id(0);
 	int iLID = get_local_id(0);
 	int GroupID = get_group_id(0);
-
-	//barrier (CLK_GLOBAL_MEM_FENCE);
-
 	WT[iLID*M + GroupID] = W[iGID];
 
-	//barrier (CLK_GLOBAL_MEM_FENCE);
 }
 
 //calculate summation of one line in the matrix X
@@ -92,27 +67,15 @@ __kernel void sum_offset(__global double* X, __global double* scratch, __global 
 	int iGID = get_global_id(0);
 	int offset = index*N;
 	int i;
-	//scratch[iGID] = 0.0f;
+
 	if(iGID < N){
 		scratch[iGID] = X[offset+iGID];
 	}else{
 		scratch[iGID] = 0.0f;
 	}
-	//offset = get_global_size(0);
+
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	
-	//Sum
-	//for(offset=offset/2; offset>0; offset = offset/2){
-	//	barrier(CLK_GLOBAL_MEM_FENCE);
-	//	if(iGID < offset){
-	//		scratch[iGID] += scratch[iGID+offset];
-	//	}
-	//	barrier(CLK_GLOBAL_MEM_FENCE);
-	//}
-	//barrier(CLK_GLOBAL_MEM_FENCE);
-	//if(iGID == 0){
-	//	temp1[index] = scratch[0];
-	//}
 	if(iGID == 0){
 		for(i = 1; i<N; i++){
 			scratch[0] += scratch[i];
@@ -121,7 +84,6 @@ __kernel void sum_offset(__global double* X, __global double* scratch, __global 
 		temp1[index] = scratch[0];
 		temp2[index] = scratch[0]/N;
 	}
-	//barrier(CLK_GLOBAL_MEM_FENCE);
 }
 //K*M  M*N
 __kernel void matrix_multi(__global double* X, __global double* Y,  
@@ -131,16 +93,11 @@ __kernel void matrix_multi(__global double* X, __global double* Y,
 	int i = get_global_id(0);
 	int j = get_global_id(1);
 	double tmp = 0.0f;
-	//int pts = 0;
-	//double d;
-	//barrier (CLK_GLOBAL_MEM_FENCE);
 
 	for (k=0; k<M; k=k+1){
 		tmp = tmp + X[i*M+k] * Y[k*N+j];
-		//barrier (CLK_GLOBAL_MEM_FENCE);
 	}
 	center_temp[i*N+j] = tmp;
-	//barrier (CLK_GLOBAL_MEM_FENCE);
 }
 
 //local: N
@@ -148,7 +105,6 @@ __kernel void matrix_multi(__global double* X, __global double* Y,
 __kernel void mu_compute(__global double* multi, __global double* wt_sum,
 						__global double* mu,__global double* mu_prev, 
 						__global double* diff){
-	//int iLID = get_local_id(0);
 	int iGID = get_global_id(0);
 	int GroupID = get_group_id(0);
 	int Global_size = get_global_size(0);
@@ -172,7 +128,6 @@ __kernel void xm_compute_j(__global double* X, __global double* mu,
 							__global double* Xm, int j){
 	int iLID = get_local_id(0);
 	int iGID = get_global_id(0);
-	//int GroupID = get_group_id(0);
 	int Group_size = get_local_size(0);
 	Xm[iGID] = X[iGID]-mu[iLID+j*Group_size];
 }
@@ -191,9 +146,6 @@ __kernel void sigma_k_compute(__global double* XM,
 	int Group_size = get_local_size(0);
 	int Group_num = get_num_groups(0);
 	int i;
-	//double tmp = 0.0f;
-	//Suppose N = 2; if not matrix multiplication needed
-	//scratch[iGID] = 0.0f;
 	switch(iLID){
 		case(0):
 			scratch[iGID] = XM[GroupID*N] * XM[GroupID*N]*W[GroupID*K+wj];
@@ -210,15 +162,6 @@ __kernel void sigma_k_compute(__global double* XM,
 			break;
 		
 	}
-	//if(iLID == 0){
-	//	scratch[iGID] = XM[GroupID*N] * XM[GroupID*N]*W[GroupID*K+wj];
-	//}else if(iLID == 1 || iLID == 2){
-	//	scratch[iGID] = XM[GroupID*N] * XM[GroupID*N+1]*W[GroupID*K+wj];
-	//}else if(iLID == 3){
-	//	scratch[iGID] = XM[GroupID*N+1] * XM[GroupID*N+1]*W[GroupID*K+wj];
-	//}else{
-	//	scratch[iGID] = 0;
-	//}
 	barrier (CLK_GLOBAL_MEM_FENCE);
 	if(GroupID == 0){
 		Sigma_k[iGID] = 0.0f;
@@ -240,6 +183,5 @@ __kernel void covar_update(__global double* Sigma, __global double* covx,
 	int iGID = get_global_id(0);
 	int index = wj*N*N + iGID;
 	covx[index] = Sigma[iGID];
-	//barrier (CLK_GLOBAL_MEM_FENCE);
 }
 

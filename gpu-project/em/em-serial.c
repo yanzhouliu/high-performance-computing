@@ -1,11 +1,3 @@
-//
-//  main.c
-//  em serial
-//
-//  Created by Xi on 5/5/15.
-//  Copyright (c) 2015 daphne. All rights reserved.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -20,22 +12,19 @@
 
 int main()
 {
-    FILE *fp;// = fopen("mu.txt","r");
-    //double mu[6];
+    FILE *fp;
     int i,j,iter,k;
     
-    //double mu[K][N];
+
     double** mu = (double**)malloc(sizeof(double*)*K);
     for(i = 0; i< K; i++)
         mu[i] = (double*)malloc(sizeof(double)*N);
     
-    //double prevMu[K][N];
     
     double** prevMu = (double**)malloc(sizeof(double*)*K);
     for(i = 0; i< K; i++)
         prevMu[i] = (double*)malloc(sizeof(double)*N);
     
-    //double sigma[K][N][N];
     double*** sigma = (double***)malloc(sizeof(double**)*K);
     for(i = 0; i< K; i++){
         sigma[i] = (double**)malloc(sizeof(double*)*N);
@@ -43,9 +32,6 @@ int main()
             sigma[i][j] = (double*)malloc(sizeof(double)*N);
     }
     
-    
-    
-    //double sigma_inv[K][N][N];
     double*** sigma_inv = (double***)malloc(sizeof(double**)*K);
     for(i = 0; i< K; i++){
         sigma_inv[i] = (double**)malloc(sizeof(double*)*N);
@@ -53,10 +39,6 @@ int main()
             sigma_inv[i][j] = (double*)malloc(sizeof(double)*N);
     }
 
-    
-    
-    
-    //double sigma_k[K][N][N];
     double*** sigma_k = (double***)malloc(sizeof(double**)*K);
     for(i = 0; i< K; i++){
         sigma_k[i] = (double**)malloc(sizeof(double*)*N);
@@ -64,14 +46,10 @@ int main()
             sigma_k[i][j] = (double*)malloc(sizeof(double)*N);
     }
 
-    
-    
-    //double X[M][N];
     double** X = (double**)malloc(sizeof(double*)*M);
     for(i = 0; i< M; i++)
         X[i] = (double*)malloc(sizeof(double)*N);
     
-    //double Xm[K][M][N];
     double*** Xm = (double***)malloc(sizeof(double**)*K);
     for(i = 0; i< K; i++){
         Xm[i] = (double**)malloc(sizeof(double*)*M);
@@ -79,25 +57,21 @@ int main()
             Xm[i][j] = (double*)malloc(sizeof(double)*N);
     }
     
-    //double phi[K]={1/((double)K),1/((double)K)};
     double phi[K];
     for(i = 0; i<K; i++){
 		phi[i]= 1/((double)(K)+0.00000001);
 	}
     
-    //double W[M][K];
     double** W = (double**)malloc(sizeof(double*)*M);
     for(i = 0; i< M; i++){
         W[i] = (double*)malloc(sizeof(double)*K);
     }
     
-    //double pdf[M][K];
     double** pdf = (double**)malloc(sizeof(double*)*M);
     for(i = 0; i< M; i++){
         pdf[i] = (double*)malloc(sizeof(double)*K);
     }
     
-    //double meanDiff[K][M][N];
     double*** meanDiff = (double***)malloc(sizeof(double**)*K);
     for(i = 0; i< K; i++){
         meanDiff[i] = (double**)malloc(sizeof(double*)*M);
@@ -106,12 +80,8 @@ int main()
 		}
 	}
 
-    
-    //double det_sig[K];
     double* det_sig = (double*)malloc(sizeof(double)*K);
     
-    
-    //double mean_inv[K][M][N];
     double*** mean_inv = (double***)malloc(sizeof(double**)*K);
     for(i = 0; i< K; i++){
         mean_inv[i] = (double**)malloc(sizeof(double*)*M);
@@ -119,8 +89,6 @@ int main()
             mean_inv[i][j] = (double*)malloc(sizeof(double)*N);
     }
 
-    
-    //double mean_inv_mean[K][M][N];
     double*** mean_inv_mean = (double***)malloc(sizeof(double**)*K);
     for(i = 0; i< K; i++){
         mean_inv_mean[i] = (double**)malloc(sizeof(double*)*M);
@@ -131,10 +99,8 @@ int main()
     
     double sum_mean[K][M][1];
     
-    //double con_pdf[K];
     double* con_pdf = (double*)malloc(sizeof(double)*K);
     
-    //double pdf_w[M][K];
     double** pdf_w = (double**)malloc(sizeof(double*)*M);
     for(i = 0; i< M; i++)
         pdf_w[i] = (double*)malloc(sizeof(double)*K);
@@ -142,16 +108,12 @@ int main()
     
     double sum_pdfw[M][1];
     
-    //double sum_W[K];
     double* sum_W = (double*)malloc(sizeof(double)*K);
     
-    //double mu_sum[K][N];
     double** mu_sum = (double**)malloc(sizeof(double*)*K);
     for(i = 0; i< K; i++)
         mu_sum[i] = (double*)malloc(sizeof(double)*N);
 
-    
-    //printf("%lf\n",phi[0]);
    
     int flag=0;
     
@@ -166,11 +128,7 @@ int main()
         }
         fclose(fp);
     }
-    
-    //printf("%lf\n",mu[0][0]);
-    //printf("%lf\n",mu[0][1]);
-   //if((fp=fopen("covx.txt","r"))!=NULL){
-   //if((fp=fopen("em_1.covx","r"))!=NULL){
+
    if((fp=fopen("em_3.covx","r"))!=NULL){
         //fscanf(fp,"%f",&mu[0]);
         for(k=0;k<K;k++){
@@ -182,23 +140,6 @@ int main()
         fclose(fp);
     }
     
-    /*for(k=0;k<K;k++){
-        sigma[k][0][0]=4;
-        sigma[k][0][1]=3;
-        sigma[k][1][0]=1;
-        sigma[k][1][1]=1;
-    }*/
-    
-   
-    /*for(k=0;k<K;k++){
-         for(i=0;i<N;i++){
-            
-                 printf("%lf %lf\n",sigma[k][i][0],sigma[k][i][1]);
-         }
-    }*/
-    
-    //if((fp=fopen("data.txt","r"))!=NULL){
-    //if((fp=fopen("em_1.2k.10000","r"))!=NULL){
     if((fp=fopen("em_3.4k.4000","r"))!=NULL){
         //fscanf(fp,"%f",&mu[0]);
         for(i=0;i<M;i++){
@@ -209,7 +150,6 @@ int main()
     }
     
     
-    //for(iter=0;iter<1000;iter++){
     for(iter=0;iter<10000;iter++){
         printf("EM Iteration %d\n",iter);
         
@@ -220,10 +160,6 @@ int main()
                 }
             }
         }
-       // printf("%lf %lf\n\n",mu[0][0],mu[0][1]);
-        for(i=0;i<1000;i++){
-         // printf("%lf %lf\n",meanDiff[0][i][0],meanDiff[0][i][1]);
-         }
     
         
         for(k=0;k<K;k++){//calculate the inverse of sigma
@@ -232,9 +168,6 @@ int main()
             sigma_inv[k][0][1]=-sigma[k][0][1]/det_sig[k];
             sigma_inv[k][1][0]=-sigma[k][1][0]/det_sig[k];
             sigma_inv[k][1][1]=sigma[k][0][0]/det_sig[k];
-            //printf("%lf\n",det_sig[k]);
-            //printf("%lf %lf\n",sigma_inv[k][0][0],sigma_inv[k][0][1]);
-            //printf("%lf %lf\n",sigma_inv[k][1][0],sigma_inv[k][1][1]);
         }
         
         for(k=0;k<K;k++){
@@ -244,13 +177,7 @@ int main()
                 }
             }
         }
-        
-        /*for(i=0;i<M;i++){
-            
-                printf("%lf %lf\n",mean_inv[0][i][0],mean_inv[0][i][1]);
-           
-        }*/
-        
+       
         for(k=0;k<K;k++){
             for(i=0;i<M;i++){
                 for(j=0;j<N;j++){
@@ -264,7 +191,6 @@ int main()
         
         for(k=0;k<K;k++){
             con_pdf[k]=1/sqrt((pow(2*M_PI,N))*det_sig[k]);
-            //printf("%lf\n",con_pdf[k]);
         }
         
         for(k=0;k<K;k++){
@@ -274,11 +200,7 @@ int main()
                     //printf("%lf\n",phi[k]);
             }
         }
-        /*for(i=0;i<M;i++){
-            
-                 printf("%lf %lf %lf\n",pdf_w[i][0],pdf_w[i][1],pdf_w[i][2]);
-            
-        }*/
+
         for(i=0;i<M;i++){
             sum_pdfw[i][0]=pdf_w[i][0]+pdf_w[i][1]+pdf_w[i][2];
             for(k=0;k<K;k++){
@@ -324,7 +246,6 @@ int main()
                 for(j=0;j<N;j++){
                     Xm[k][i][j]=X[i][j]-mu[k][j];
 					if(k == 0){
-						// printf("%lf\n",Xm[k][i][j]);
 					}
                 }
             }
@@ -353,12 +274,7 @@ int main()
                    sigma[k][i][j]=sigma_k[k][i][j]/sum_W[k];
             }
         }
-        
-        /*for(k=0;k<K;k++){
-            for(i=0;i<N;i++){
-                printf("%lf %lf\n",sigma[k][i][0],sigma[k][i][1]);
-            }
-        }*/
+
         flag=0;
     
         for(i=0;i<K;i++){
@@ -374,16 +290,7 @@ int main()
     
         
     }
-    
-   
-    
-    
-    
-    
-   /* for(k=0;k<K;k++){
-        printf("%lf %lf\n",mu[k][0],mu[k][1]);
-    }*/
-    
+
     
     free(mu);
     
@@ -391,31 +298,22 @@ int main()
     
     free(sigma);
     
-    
-    
-    
     free(sigma_inv);
-    
-    
+
     free(sigma_k);
-    
-    
-    
-    
+
     free(X);
     
     free(Xm);
+    
     free(W);
     
     free(pdf);
     
-    
     free(meanDiff);
 
-    
     free(det_sig);
-    
-    
+
     free(mean_inv);
     
     free(mean_inv_mean);
@@ -427,10 +325,7 @@ int main()
     free(sum_W);
     
     free(mu_sum);
-    
-    
-    
-    
+
     return 0;
 }
 
