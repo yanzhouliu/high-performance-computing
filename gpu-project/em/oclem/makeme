@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+
+# Script to build this project
+g++ oclem.cpp -I/home/yzliu/NVIDIA_GPU_Computing_SDK/OpenCL/common/inc -lOpenCL -o oclem
