@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-
-g++ oclkmeans.cpp -I/home/yzliu/NVIDIA_GPU_Computing_SDK/OpenCL/common/inc -lOpenCL -o oclkmeans
