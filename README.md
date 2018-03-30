@@ -4,7 +4,7 @@ This is a repository of three course projects in High Performance Computing Cour
 
 ### 1. MPI project: to do parallel programming on a cluster using MPI. 
 
-The prgram is to write a parallel implementation of a program to simulate the game of Life.
+The program is to write a parallel implementation of a program to simulate the game of Life.
 
 The game of life simulates simple cellular automata. The game is played on a rectangular board containing cells. At the start, some of the cells are occupied, the rest are empty. The game consists of constructing successive generations of the board. The rules for constructing the next generation from the previous one are:
 
